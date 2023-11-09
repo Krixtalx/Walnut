@@ -71,8 +71,7 @@ static std::unordered_map<std::string, ImFont*> s_Fonts;
 
 static Walnut::Application* s_Instance = nullptr;
 
-void check_vk_result(VkResult err)
-{
+void check_vk_result(VkResult err) {
 	if (err == 0)
 		return;
 	fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
@@ -81,16 +80,14 @@ void check_vk_result(VkResult err)
 }
 
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
-static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
-{
+static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData) {
 	(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
-//	fprintf(stderr, "[vulkan] Debug report from ObjectType: %i\nMessage: %s\n\n", objectType, pMessage);
+	//	fprintf(stderr, "[vulkan] Debug report from ObjectType: %i\nMessage: %s\n\n", objectType, pMessage);
 	return VK_FALSE;
 }
 #endif // IMGUI_VULKAN_DEBUG_REPORT
 
-static void SetupVulkan(const char** extensions, uint32_t extensions_count)
-{
+static void SetupVulkan(const char** extensions, uint32_t extensions_count) {
 	VkResult err;
 
 	// Create Vulkan Instance
@@ -152,12 +149,10 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 		// most common cases (multi-gpu/integrated+dedicated graphics). Handling more complicated setups (multiple
 		// dedicated GPUs) is out of scope of this sample.
 		int use_gpu = 0;
-		for (int i = 0; i < (int)gpu_count; i++)
-		{
+		for (int i = 0; i < (int)gpu_count; i++) {
 			VkPhysicalDeviceProperties properties;
 			vkGetPhysicalDeviceProperties(gpus[i], &properties);
-			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-			{
+			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 				use_gpu = i;
 				break;
 			}
@@ -174,8 +169,7 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 		VkQueueFamilyProperties* queues = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * count);
 		vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, queues);
 		for (uint32_t i = 0; i < count; i++)
-			if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
+			if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 				g_QueueFamily = i;
 				break;
 			}
@@ -233,15 +227,13 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 
 // All the ImGui_ImplVulkanH_XXX structures/functions are optional helpers used by the demo.
 // Your real engine/app may not use them.
-static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height)
-{
+static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {
 	wd->Surface = surface;
 
 	// Check for WSI support
 	VkBool32 res;
 	vkGetPhysicalDeviceSurfaceSupportKHR(g_PhysicalDevice, g_QueueFamily, wd->Surface, &res);
-	if (res != VK_TRUE)
-	{
+	if (res != VK_TRUE) {
 		fprintf(stderr, "Error no WSI support on physical device 0\n");
 		exit(-1);
 	}
@@ -265,8 +257,7 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface
 	ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
 }
 
-static void CleanupVulkan()
-{
+static void CleanupVulkan() {
 	vkDestroyDescriptorPool(g_Device, g_DescriptorPool, g_Allocator);
 
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
@@ -279,20 +270,17 @@ static void CleanupVulkan()
 	vkDestroyInstance(g_Instance, g_Allocator);
 }
 
-static void CleanupVulkanWindow()
-{
+static void CleanupVulkanWindow() {
 	ImGui_ImplVulkanH_DestroyWindow(g_Instance, g_Device, &g_MainWindowData, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
-{
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data) {
 	VkResult err;
 
 	VkSemaphore image_acquired_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
 	VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
 	err = vkAcquireNextImageKHR(g_Device, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
-	if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
-	{
+	if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
 		g_SwapChainRebuild = true;
 		return;
 	}
@@ -308,7 +296,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 		err = vkResetFences(g_Device, 1, &fd->Fence);
 		check_vk_result(err);
 	}
-	
+
 	{
 		// Free resources in queue
 		for (auto& func : s_ResourceFreeQueue[s_CurrentFrameIndex])
@@ -319,8 +307,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 		// Free command buffers allocated by Application::GetCommandBuffer
 		// These use g_MainWindowData.FrameIndex and not s_CurrentFrameIndex because they're tied to the swapchain image index
 		auto& allocatedCommandBuffers = s_AllocatedCommandBuffers[wd->FrameIndex];
-		if (allocatedCommandBuffers.size() > 0)
-		{
+		if (allocatedCommandBuffers.size() > 0) {
 			vkFreeCommandBuffers(g_Device, fd->CommandPool, (uint32_t)allocatedCommandBuffers.size(), allocatedCommandBuffers.data());
 			allocatedCommandBuffers.clear();
 		}
@@ -369,8 +356,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 	}
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window* wd)
-{
+static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
 	if (g_SwapChainRebuild)
 		return;
 	VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
@@ -382,8 +368,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 	info.pSwapchains = &wd->Swapchain;
 	info.pImageIndices = &wd->FrameIndex;
 	VkResult err = vkQueuePresentKHR(g_Queue, &info);
-	if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
-	{
+	if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
 		g_SwapChainRebuild = true;
 		return;
 	}
@@ -391,8 +376,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 	wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
 }
 
-static void glfw_error_callback(int error, const char* description)
-{
+static void glfw_error_callback(int error, const char* description) {
 	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
@@ -402,42 +386,36 @@ namespace Walnut {
 #include "Walnut/Embed/WindowImages.embed"
 
 	Application::Application(const ApplicationSpecification& specification)
-		: m_Specification(specification)
-	{
+		: m_Specification(specification) {
 		s_Instance = this;
 
 		Init();
 	}
 
-	Application::~Application()
-	{
+	Application::~Application() {
 		Shutdown();
 
 		s_Instance = nullptr;
 	}
 
-	Application& Application::Get()
-	{
+	Application& Application::Get() {
 		return *s_Instance;
 	}
 
-	void Application::Init()
-	{
+	void Application::Init() {
 		// Intialize logging
 		Log::Init();
 
 		// Setup GLFW window
 		glfwSetErrorCallback(glfw_error_callback);
-		if (!glfwInit())
-		{
+		if (!glfwInit()) {
 			std::cerr << "Could not initalize GLFW!\n";
 			return;
 		}
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		if (m_Specification.CustomTitlebar)
-		{
+		if (m_Specification.CustomTitlebar) {
 			glfwWindowHint(GLFW_TITLEBAR, false);
 
 			// NOTE(Yan): Undecorated windows are probably
@@ -455,29 +433,26 @@ namespace Walnut {
 
 		m_WindowHandle = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Name.c_str(), NULL, NULL);
 
-		if (m_Specification.CenterWindow)
-		{
+		if (m_Specification.CenterWindow) {
 			glfwSetWindowPos(m_WindowHandle,
 				monitorX + (videoMode->width - m_Specification.Width) / 2,
 				monitorY + (videoMode->height - m_Specification.Height) / 2);
 
 			glfwSetWindowAttrib(m_WindowHandle, GLFW_RESIZABLE, m_Specification.WindowResizeable ? GLFW_TRUE : GLFW_FALSE);
 		}
-		
+
 		glfwShowWindow(m_WindowHandle);
 
 		// Setup Vulkan
-		if (!glfwVulkanSupported())
-		{
+		if (!glfwVulkanSupported()) {
 			std::cerr << "GLFW: Vulkan not supported!\n";
 			return;
 		}
-		
+
 		// Set icon
 		GLFWimage icon;
 		int channels;
-		if (!m_Specification.IconPath.empty())
-		{
+		if (!m_Specification.IconPath.empty()) {
 			std::string iconPathStr = m_Specification.IconPath.string();
 			icon.pixels = stbi_load(iconPathStr.c_str(), &icon.width, &icon.height, &channels, 4);
 			glfwSetWindowIcon(m_WindowHandle, 1, &icon);
@@ -485,11 +460,10 @@ namespace Walnut {
 		}
 
 		glfwSetWindowUserPointer(m_WindowHandle, this);
-		glfwSetTitlebarHitTestCallback(m_WindowHandle, [](GLFWwindow* window, int x, int y, int* hit)
-		{
+		glfwSetTitlebarHitTestCallback(m_WindowHandle, [](GLFWwindow* window, int x, int y, int* hit) {
 			Application* app = (Application*)glfwGetWindowUserPointer(window);
 			*hit = app->IsTitleBarHovered();
-		});
+			});
 
 		uint32_t extensions_count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
@@ -534,8 +508,7 @@ namespace Walnut {
 		style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 
 		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
@@ -631,8 +604,7 @@ namespace Walnut {
 
 	}
 
-	void Application::Shutdown()
-	{
+	void Application::Shutdown() {
 		for (auto& layer : m_LayerStack)
 			layer->OnDetach();
 
@@ -652,8 +624,7 @@ namespace Walnut {
 		check_vk_result(err);
 
 		// Free resources in queue
-		for (auto& queue : s_ResourceFreeQueue)
-		{
+		for (auto& queue : s_ResourceFreeQueue) {
 			for (auto& func : queue)
 				func();
 		}
@@ -674,8 +645,7 @@ namespace Walnut {
 		Log::Shutdown();
 	}
 
-	void Application::UI_DrawTitlebar(float& outTitlebarHeight)
-	{
+	void Application::UI_DrawTitlebar(float& outTitlebarHeight) {
 		const float titlebarHeight = 58.0f;
 		const bool isMaximized = IsMaximized();
 		float titlebarVerticalOffset = isMaximized ? -6.0f : 0.0f;
@@ -717,16 +687,14 @@ namespace Walnut {
 
 		m_TitleBarHovered = ImGui::IsItemHovered();
 
-		if (isMaximized)
-		{
+		if (isMaximized) {
 			float windowMousePosY = ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y;
 			if (windowMousePosY >= 0.0f && windowMousePosY <= 5.0f)
 				m_TitleBarHovered = true; // Account for the top-most pixels which don't register
 		}
 
 		// Draw Menubar
-		if (m_MenubarCallback)
-		{
+		if (m_MenubarCallback) {
 			ImGui::SuspendLayout();
 			{
 				ImGui::SetItemAllowOverlap();
@@ -765,11 +733,9 @@ namespace Walnut {
 			const int iconWidth = m_IconMinimize->GetWidth();
 			const int iconHeight = m_IconMinimize->GetHeight();
 			const float padY = (buttonHeight - (float)iconHeight) / 2.0f;
-			if (ImGui::InvisibleButton("Minimize", ImVec2(buttonWidth, buttonHeight)))
-			{
+			if (ImGui::InvisibleButton("Minimize", ImVec2(buttonWidth, buttonHeight))) {
 				// TODO: move this stuff to a better place, like Window class
-				if (m_WindowHandle)
-				{
+				if (m_WindowHandle) {
 					Application::Get().QueueEvent([windowHandle = m_WindowHandle]() { glfwIconifyWindow(windowHandle); });
 				}
 			}
@@ -787,15 +753,13 @@ namespace Walnut {
 
 			const bool isMaximized = IsMaximized();
 
-			if (ImGui::InvisibleButton("Maximize", ImVec2(buttonWidth, buttonHeight)))
-			{
-				Application::Get().QueueEvent([isMaximized, windowHandle = m_WindowHandle]()
-				{
+			if (ImGui::InvisibleButton("Maximize", ImVec2(buttonWidth, buttonHeight))) {
+				Application::Get().QueueEvent([isMaximized, windowHandle = m_WindowHandle]() {
 					if (isMaximized)
 						glfwRestoreWindow(windowHandle);
 					else
 						glfwMaximizeWindow(windowHandle);
-				});
+					});
 			}
 
 			UI::DrawButtonImage(isMaximized ? m_IconRestore : m_IconMaximize, buttonColN, buttonColH, buttonColP);
@@ -819,37 +783,30 @@ namespace Walnut {
 		outTitlebarHeight = titlebarHeight;
 	}
 
-	void Application::UI_DrawMenubar()
-	{
+	void Application::UI_DrawMenubar() {
 		if (!m_MenubarCallback)
 			return;
 
-		if (m_Specification.CustomTitlebar)
-		{
+		if (m_Specification.CustomTitlebar) {
 			const ImRect menuBarRect = { ImGui::GetCursorPos(), { ImGui::GetContentRegionAvail().x + ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeightWithSpacing() } };
 
 			ImGui::BeginGroup();
-			if (UI::BeginMenubar(menuBarRect))
-			{
+			if (UI::BeginMenubar(menuBarRect)) {
 				m_MenubarCallback();
 			}
 
 			UI::EndMenubar();
 			ImGui::EndGroup();
 
-		}
-		else
-		{
-			if (ImGui::BeginMenuBar())
-			{
+		} else {
+			if (ImGui::BeginMenuBar()) {
 				m_MenubarCallback();
 				ImGui::EndMenuBar();
 			}
 		}
 	}
 
-	void Application::Run()
-	{
+	void Application::Run() {
 		m_Running = true;
 
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
@@ -857,8 +814,7 @@ namespace Walnut {
 		ImGuiIO& io = ImGui::GetIO();
 
 		// Main loop
-		while (!glfwWindowShouldClose(m_WindowHandle) && m_Running)
-		{
+		while (!glfwWindowShouldClose(m_WindowHandle) && m_Running) {
 			// Poll and handle events (inputs, window resize, etc.)
 			// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 			// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
@@ -870,8 +826,7 @@ namespace Walnut {
 				std::scoped_lock<std::mutex> lock(m_EventQueueMutex);
 
 				// Process custom event queue
-				while (m_EventQueue.size() > 0)
-				{
+				while (m_EventQueue.size() > 0) {
 					auto& func = m_EventQueue.front();
 					func();
 					m_EventQueue.pop();
@@ -882,12 +837,10 @@ namespace Walnut {
 				layer->OnUpdate(m_TimeStep);
 
 			// Resize swap chain?
-			if (g_SwapChainRebuild)
-			{
+			if (g_SwapChainRebuild) {
 				int width, height;
 				glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-				if (width > 0 && height > 0)
-				{
+				if (width > 0 && height > 0) {
 					ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
 					ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
 					g_MainWindowData.FrameIndex = 0;
@@ -941,9 +894,8 @@ namespace Walnut {
 
 					ImGui::PopStyleColor(); // ImGuiCol_Border
 				}
-				
-				if (m_Specification.CustomTitlebar)
-				{
+
+				if (m_Specification.CustomTitlebar) {
 					float titleBarHeight;
 					UI_DrawTitlebar(titleBarHeight);
 					ImGui::SetCursorPosY(titleBarHeight);
@@ -979,8 +931,7 @@ namespace Walnut {
 				FrameRender(wd, main_draw_data);
 
 			// Update and Render additional Platform Windows
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 				ImGui::UpdatePlatformWindows();
 				ImGui::RenderPlatformWindowsDefault();
 			}
@@ -999,38 +950,31 @@ namespace Walnut {
 
 	}
 
-	void Application::Close()
-	{
+	void Application::Close() {
 		m_Running = false;
 	}
 
-	bool Application::IsMaximized() const
-	{
+	bool Application::IsMaximized() const {
 		return (bool)glfwGetWindowAttrib(m_WindowHandle, GLFW_MAXIMIZED);
 	}
 
-	float Application::GetTime()
-	{
+	float Application::GetTime() {
 		return (float)glfwGetTime();
 	}
 
-	VkInstance Application::GetInstance()
-	{
+	VkInstance Application::GetInstance() {
 		return g_Instance;
 	}
 
-	VkPhysicalDevice Application::GetPhysicalDevice()
-	{
+	VkPhysicalDevice Application::GetPhysicalDevice() {
 		return g_PhysicalDevice;
 	}
 
-	VkDevice Application::GetDevice()
-	{
+	VkDevice Application::GetDevice() {
 		return g_Device;
 	}
 
-	VkCommandBuffer Application::GetCommandBuffer(bool begin)
-	{
+	VkCommandBuffer Application::GetCommandBuffer(bool begin) {
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 
 		// Use any command queue
@@ -1054,8 +998,7 @@ namespace Walnut {
 		return command_buffer;
 	}
 
-	void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer)
-	{
+	void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer) {
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
 		VkSubmitInfo end_info = {};
@@ -1083,13 +1026,11 @@ namespace Walnut {
 	}
 
 
-	void Application::SubmitResourceFree(std::function<void()>&& func)
-	{
+	void Application::SubmitResourceFree(std::function<void()>&& func) {
 		s_ResourceFreeQueue[s_CurrentFrameIndex].emplace_back(func);
 	}
 
-	ImFont* Application::GetFont(const std::string& name)
-	{
+	ImFont* Application::GetFont(const std::string& name) {
 		if (!s_Fonts.contains(name))
 			return nullptr;
 

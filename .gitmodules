@@ -9,6 +9,7 @@
 [submodule "vendor/glfw"]
 	path = vendor/glfw
 	url = https://github.com/thecherno/glfw
+	branch = c186bef662454c9a11a19e0773a8a7c07bd0aa47
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = https://github.com/g-truc/glm
