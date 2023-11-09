@@ -1,15 +1,23 @@
 project "Walnut"
    kind "StaticLib"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "src/**.h", "src/**.cpp" }
+   files
+   {
+       "Source/**.h",
+       "Source/**.cpp",
+
+       "Platform/GUI/**.h",
+       "Platform/GUI/**.cpp",
+   }
 
    includedirs
    {
-      "src",
+      "Source",
+      "Platform/GUI",
 
       "../vendor/imgui",
       "../vendor/glfw/include",
@@ -17,6 +25,7 @@ project "Walnut"
 
       "%{IncludeDir.VulkanSDK}",
       "%{IncludeDir.glm}",
+      "%{IncludeDir.spdlog}",
    }
 
    links
@@ -27,8 +36,8 @@ project "Walnut"
        "%{Library.Vulkan}",
    }
 
-   targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-   objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
+   targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
+   objdir ("../../bin-int/" .. outputdir .. "/%{prj.name}")
 
    filter "system:windows"
       systemversion "latest"
